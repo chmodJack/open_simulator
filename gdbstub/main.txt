@@ -1,0 +1,36 @@
+#include<iostream>
+
+using namespace std;
+
+#include"socket.hpp"
+#include"gdb_stub.hpp"
+
+int main(int argc,char* argv[])
+{
+	coder1::tcp_socket s;	
+	s.bind("0.0.0.0",1234);
+	s.listen(1);
+
+	char recv_buffer[4096]={0};
+
+	int fd = s.accept();
+
+	gdb_stub gdbs;
+	gdbs.set_communication_handle(fd);
+
+	while(1)
+	{
+		int ret=gdbs.get_packet(recv_buffer);
+		if(ret == 0)
+		{
+			gdbs.process_cmd(recv_buffer);
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	close(s.m_socket);
+    return 0;
+}
